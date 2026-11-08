@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Secrets and environment variables
+.env
+.env.*
+!.env.example
+
+# Local datasets (JESC and processed files)
+data/*
+!data/.gitkeep
+!data/README.md
+
+# Trained models and tokenizer artifacts
+artifacts/*
+!artifacts/.gitkeep
+
+# Experiments, logs, and checkpoints
+outputs/*
+!outputs/.gitkeep
+runs/
+wandb/
+lightning_logs/
+tensorboard/
+*.log
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+*.onnx
+
+# Local caches
+.cache/
+.ipynb_checkpoints/
