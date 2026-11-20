@@ -59,16 +59,3 @@ def tokenize_dataset(dataset, tokenizer:Tokenizer):
     return src_ids, tgt_ids
 
 
-
-def tokenize_and_save(dataset, tokenizer:Tokenizer, output_path, batch_size=1000):
-    output_path = Path(output_path)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    if tokenizer.get_vocab_size() > 2**16:
-        raise ValueError("Vocabulary too large for uint16")
-
-    total_tokens = 0
-    with open(output_path, "wb") as f:
-        for start in range(0, len(dataset), batch_size):
-            
-
