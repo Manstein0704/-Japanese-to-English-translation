@@ -37,15 +37,12 @@ def get_batch(dataset, batch_size, pad_id=0):
     decoder_input = tgt[:,:-1]
     labels = tgt[:, 1:]
 
-    src_padding_mask = (src==pad_id)
-    tgt_padding_mask = (decoder_input==pad_id)
 
-
-    return src, decoder_input, labels, src_padding_mask, tgt_padding_mask
+    return src, decoder_input, labels
 
 
 
-def tokenize_dataset(dataset, tokenizer:Tokenizer):
+def tokenize_dataset(dataset, tokenizer:Tokenizer, max_len=128):
     src_ids = []
     tgt_ids = []
 
@@ -53,8 +50,12 @@ def tokenize_dataset(dataset, tokenizer:Tokenizer):
         ja = example["translation"]["ja"]
         en = example["translation"]["en"]
 
-        src_ids.append(tokenizer.encode(ja).ids)
-        tgt_ids.append(tokenizer.encode(en).ids)
+        src = tokenizer.encode(ja).ids
+        tgt = tokenizer.encode(en).ids
+
+        if len(src) <= max_len and len(tgt) <= max_len:
+            src_ids.append(src)
+            tgt_ids.append(tgt)
 
     return src_ids, tgt_ids
 
