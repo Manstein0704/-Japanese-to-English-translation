@@ -38,7 +38,7 @@ def get_batch(dataset, batch_size, pad_id=0):
     labels = tgt[:, 1:]
 
     src_padding_mask = (src==pad_id)
-    tgt_padding_mask = (tgt==pad_id)
+    tgt_padding_mask = (decoder_input==pad_id)
 
 
     return src, decoder_input, labels, src_padding_mask, tgt_padding_mask
