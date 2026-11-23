@@ -55,7 +55,7 @@ def main():
     total_loss = 0
     with open(log_path, "w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["Step", "TrainLoss"])
+        writer.writerow(["Step", "TrainLoss", "ValLoss"])
 
     for step in range(MAX_STEPS):
 
