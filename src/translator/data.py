@@ -9,13 +9,22 @@ from torch.nn.utils.rnn import pad_sequence
 
 
 def load_jesc_datasets():
-    dataset = load_dataset("nntsuzu/JESC", split="train")
-    split = dataset.train_test_split(test_size=8000, seed=2026)
-    eval_split = split["test"].train_test_split(test_size=4000, seed=2026)
+    cache_path = Path("artifacts/datasets/jesc.pt")
+    if cache_path.exists():
+        print("Loading JESC from local cache...")
+        dataset = torch.load(
+            cache_path,
+            weights_only=False
+        )
+    else:
+        print("Loading JESC from Hugging Face...")
+        dataset = load_dataset("nntsuzu/JESC", split="train")
+        split = dataset.train_test_split(test_size=8000, seed=2026)
+        eval_split = split["test"].train_test_split(test_size=4000, seed=2026)
 
-    train_ds = split["train"]
-    eval_ds = eval_split["train"]
-    test_ds = eval_split["test"]
+        train_ds = split["train"]
+        eval_ds = eval_split["train"]
+        test_ds = eval_split["test"]
 
 
     return train_ds, eval_ds, test_ds
