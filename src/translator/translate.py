@@ -22,11 +22,18 @@ def load_model():
                             map_location=device,
                             weights_only=True)
 
+
+    print("Checkpoint:", CHECKPOINT_PATH)
+    print("Training Step:", checkpoint["step"])
+    print("Training Config:", checkpoint["training_config"])
+
     model.load_state_dict(checkpoint["model_state_dict"])
     model.eval()
 
     return model, tokenizer
 
+
+@torch.inference_mode()
 def translate(model, tokenizer:Tokenizer, text, max_new_tokens=1000):
     src_ids = tokenizer.encode(text).ids
     if len(src_ids) > model.max_len:
