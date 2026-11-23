@@ -4,6 +4,7 @@ import torch.nn as nn
 from translator.model import Transformer
 from tokenizers import Tokenizer
 from translator.data import (load_jesc_datasets, tokenize_dataset, get_batch)
+from translator.evaluate import evaluate
 import random
 import numpy as np
 from pathlib import Path
@@ -77,20 +78,32 @@ def main():
 
         total_loss += loss.item()
         if (step + 1) % 100 == 0:
-            avg_loss = total_loss / 100
+            train_loss = total_loss / 100
+            val_loss = evaluate(
+                model=model,
+                eval_data=eval_data,
+                criterion=criterion,
+                device=device,
+                vocab_size=vocab_size,
+                pad_id=pad_id,
+                batch_size=BATCH_SIZE,
+                eval_iters=20
+            )
+
             print(
                 f"Step {step+1}/{MAX_STEPS} | "
-                f"Train Loss: {avg_loss:.4f}"
+                f"Train Loss: {train_loss:.4f} | "
+                f"Val Loss: {val_loss:.4f}"
             )
 
             with open(log_path, "a", newline="") as f:
                 writer = csv.writer(f)
-                writer.writerow([step+1, avg_loss])
+                writer.writerow([step+1, train_loss, val_loss])
             total_loss = 0.0
 
 
 
-    save_path = Path(f"artifacts/checkpoints/minigpt_step{MAX_STEPS:06d}.pt")
+    save_path = Path(f"artifacts/checkpoints/model_step{MAX_STEPS:06d}.pt")
     save_path.parent.mkdir(parents=True, exist_ok=True)
 
     checkpoint = {}
