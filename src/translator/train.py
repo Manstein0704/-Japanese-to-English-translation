@@ -20,7 +20,7 @@ def set_seed(seed):
 
 BATCH_SIZE = 8
 LEARNING_RATE = 3e-4
-MAX_STEPS = 1000000
+MAX_STEPS = 10000000
 SEED=2026
 
 def main():
@@ -41,7 +41,16 @@ def main():
     #model initialization
     vocab_size = tokenizer.get_vocab_size()
     pad_id = tokenizer.token_to_id("<pad>")
-    model = Transformer(vocab_size=vocab_size, pad_id=pad_id).to(device)
+    model = Transformer(
+        vocab_size=vocab_size,
+        d_model=384,
+        nhead=8,
+        num_layers=4,
+        dim_feedforward=1536,
+        dropout=0.1,
+        max_len=128,
+        pad_id=pad_id
+    ).to(device)
 
     #define optimizer and loss function
     optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE)

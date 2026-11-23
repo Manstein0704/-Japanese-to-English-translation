@@ -19,6 +19,10 @@ def load_jesc_datasets():
     else:
         print("Loading JESC from Hugging Face...")
         dataset = load_dataset("nntsuzu/JESC", split="train")
+        cache_path.parent.mkdir(parents=True,
+                                exist_ok=True)
+        torch.save(dataset, cache_path)
+        print(f"Dataset saved to {cache_path}")
         split = dataset.train_test_split(test_size=8000, seed=2026)
         eval_split = split["test"].train_test_split(test_size=4000, seed=2026)
 
