@@ -81,7 +81,7 @@ def main():
             train_loss = total_loss / 100
             val_loss = evaluate(
                 model=model,
-                eval_data=eval_data,
+                data=eval_data,
                 criterion=criterion,
                 device=device,
                 vocab_size=vocab_size,
