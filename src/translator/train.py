@@ -18,8 +18,8 @@ def set_seed(seed):
     torch.cuda.manual_seed(seed)
 
 
-BATCH_SIZE = 8
-LEARNING_RATE = 3e-4
+BATCH_SIZE = 128
+LEARNING_RATE = 1e-3
 MAX_STEPS = 100000
 SEED=2026
 
@@ -43,11 +43,11 @@ def main():
     pad_id = tokenizer.token_to_id("<pad>")
     model = Transformer(
         vocab_size=vocab_size,
-        d_model=384,
-        nhead=8,
-        num_layers=4,
-        dim_feedforward=1536,
-        dropout=0.1,
+        d_model=256,
+        nhead=4,
+        num_layers=2,
+        dim_feedforward=64,
+        dropout=0.2,
         max_len=128,
         pad_id=pad_id
     ).to(device)
