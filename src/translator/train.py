@@ -87,7 +87,7 @@ def main():
 
         total_loss += loss.item()
         if (step + 1) % 1000 == 0:
-            train_loss = total_loss / 100
+            train_loss = total_loss / 1000
             val_loss = evaluate(
                 model=model,
                 data=eval_data,
