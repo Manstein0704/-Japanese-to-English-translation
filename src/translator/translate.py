@@ -7,7 +7,7 @@ from translator.model import Transformer
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 TOKENIZER_PATH = "artifacts/tokenizer.json"
-CHECKPOINT_PATH = "artifacts/checkpoints/model_step1000000.pt"
+CHECKPOINT_PATH = "artifacts/checkpoints/model_step010000.pt"
 
 def load_model():
     tokenizer = Tokenizer.from_file(TOKENIZER_PATH)

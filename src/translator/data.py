@@ -23,12 +23,12 @@ def load_jesc_datasets():
                                 exist_ok=True)
         torch.save(dataset, cache_path)
         print(f"Dataset saved to {cache_path}")
-        split = dataset.train_test_split(test_size=8000, seed=2026)
-        eval_split = split["test"].train_test_split(test_size=4000, seed=2026)
+    split = dataset.train_test_split(test_size=8000, seed=2026)
+    eval_split = split["test"].train_test_split(test_size=4000, seed=2026)
 
-        train_ds = split["train"]
-        eval_ds = eval_split["train"]
-        test_ds = eval_split["test"]
+    train_ds = split["train"]
+    eval_ds = eval_split["train"]
+    test_ds = eval_split["test"]
 
 
     return train_ds, eval_ds, test_ds

@@ -20,7 +20,7 @@ def set_seed(seed):
 
 BATCH_SIZE = 8
 LEARNING_RATE = 3e-4
-MAX_STEPS = 10000000
+MAX_STEPS = 100000
 SEED=2026
 
 def main():
@@ -86,7 +86,7 @@ def main():
         optimizer.step()
 
         total_loss += loss.item()
-        if (step + 1) % 100 == 0:
+        if (step + 1) % 1000 == 0:
             train_loss = total_loss / 100
             val_loss = evaluate(
                 model=model,
