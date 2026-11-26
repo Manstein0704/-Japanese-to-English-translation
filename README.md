@@ -43,7 +43,7 @@ The model handles many everyday expressions, but short inputs and literary langu
 
 The trained Transformer model can be integrated with Gradio to build a simple web-based Japanese-to-English translation system. Users can enter Japanese text and translate it into English through a straightforward interface.
 
-[▶ Watch the translation demo (MP4)](docs/translation_demo.mp4)
+![Japanese-to-English translation system built with Gradio](docs/translation_demo.png)
 
 ## Model Configuration
 
