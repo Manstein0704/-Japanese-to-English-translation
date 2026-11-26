@@ -36,7 +36,6 @@ Actual greedy-decoding outputs from the larger model (unedited):
 | 何をしているんですか？ | what are you doing? |
 | 私の名前は太郎です | my name is taro |
 | 月がきれいですね | the moon is beautiful |
-| 今日 | i'm sorry! |
 
 The model handles many everyday expressions, but short inputs and literary language can still produce incorrect translations. These examples are qualitative; corpus-level translation metrics are planned.
 
