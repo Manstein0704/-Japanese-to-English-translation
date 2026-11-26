@@ -39,6 +39,12 @@ Actual greedy-decoding outputs from the larger model (unedited):
 
 The model handles many everyday expressions, but short inputs and literary language can still produce incorrect translations. These examples are qualitative; corpus-level translation metrics are planned.
 
+## Translation Demo
+
+The trained Transformer model can be integrated with Gradio to build a simple web-based Japanese-to-English translation system. Users can enter Japanese text and translate it into English through a straightforward interface.
+
+[▶ Watch the translation demo (MP4)](docs/translation_demo.mp4)
+
 ## Model Configuration
 
 | Setting | Value |
