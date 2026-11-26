@@ -12,19 +12,51 @@ The goal is to understand and implement the full machine translation pipeline, f
 - Training and validation loss logging to CSV
 - Dataset caching and model checkpoints
 
+## Training Results
+
+A larger Pre-LN Transformer was trained from scratch on an NVIDIA GeForce RTX 5090 for 100,000 optimization steps.
+
+![Training and validation loss](docs/train_val_loss.svg)
+
+| Model | Final train loss | Final validation loss |
+| --- | ---: | ---: |
+| Small Transformer | 3.1399 | 3.0313 |
+| Large Pre-LN Transformer | 2.2672 | 2.3394 |
+
+Both runs used 100,000 steps, with batch sizes of 128 and 256 respectively. The larger run achieved a 22.8% lower final validation loss; this comparison does not isolate the effect of model size.
+
+## Translation Examples
+
+Actual greedy-decoding outputs from the larger model (unedited):
+
+| Japanese input | English output |
+| --- | --- |
+| こんにちは | hello! |
+| 空が青い | the sky is blue |
+| 何をしているんですか？ | what are you doing? |
+| 私の名前は太郎です | my name is taro |
+| 月がきれいですね | the moon is beautiful |
+| 今日 | i'm sorry! |
+
+The model handles many everyday expressions, but short inputs and literary language can still produce incorrect translations. These examples are qualitative; corpus-level translation metrics are planned.
+
 ## Model Configuration
 
 | Setting | Value |
 | --- | --- |
-| Embedding dimension | 384 |
+| Embedding dimension | 512 |
 | Attention heads | 8 |
-| Encoder / decoder layers | 4 / 4 |
-| Feed-forward dimension | 1,536 |
+| Encoder / decoder layers | 6 / 6 |
+| Feed-forward dimension | 2,048 |
 | Dropout | 0.1 |
 | Maximum sequence length | 128 tokens |
 | Optimizer | AdamW |
+| Normalization | Pre-LN |
+| Batch size | 256 |
+| Training steps | 100,000 |
+| Compilation | torch.compile (dynamic shapes) |
 
-These are the settings currently used in `train.py`; they can be changed for experiments.
+These are the settings reported for the larger RTX 5090 experiment above. The checked-in training script currently uses a smaller baseline configuration; adjust the training and model settings to reproduce the larger run.
 
 ## Getting Started
 
@@ -49,7 +81,7 @@ The tokenizer is saved to `artifacts/tokenizer.json`. The dataset is downloaded 
 ### 2. Train the Model
 
 ```bash
-PYTHONPATH=src python -m translator.train
+CUBLAS_WORKSPACE_CONFIG=:4096:8 PYTHONPATH=src python -m translator.train
 ```
 
 The training script records training and validation losses in `outputs/train_loss.csv` and saves a checkpoint after training finishes. Training settings, including the number of steps, are configured in `src/translator/train.py`.
