@@ -7,16 +7,23 @@ from translator.model import Transformer
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 TOKENIZER_PATH = "artifacts/tokenizer.json"
-CHECKPOINT_PATH = "artifacts/checkpoints/model_step010000.pt"
+CHECKPOINT_PATH = "artifacts/checkpoints/model_step100000.pt"
 
 def load_model():
     tokenizer = Tokenizer.from_file(TOKENIZER_PATH)
     vocab_size = tokenizer.get_vocab_size()
     pad_id = tokenizer.token_to_id(("<pad>"))
 
-    model = Transformer(vocab_size=vocab_size,
-                        pad_id=pad_id,
-                        ).to(device)
+    model = Transformer(
+        vocab_size=vocab_size,
+        d_model=512,
+        nhead=8,
+        num_layers=6,
+        dim_feedforward=2048,
+        dropout=0.1,
+        max_len=128,
+        pad_id=pad_id
+    ).to(device)
 
     checkpoint = torch.load(CHECKPOINT_PATH,
                             map_location=device,

@@ -28,10 +28,11 @@ class Transformer(nn.Module):
                                           num_decoder_layers=num_layers,
                                           dim_feedforward=dim_feedforward,
                                           dropout=dropout,
-                                          batch_first=True)
+                                          batch_first=True,
+                                          norm_first=True)
 
         #Output Linear Layer
-        self.linear = nn.LazyLinear(vocab_size)
+        self.linear = nn.Linear(d_model, vocab_size)
 
 
 

@@ -1,93 +1,130 @@
-"""Training and checkpointing (to implement)."""
+"""Training and checkpointing."""
+
 import torch
 import torch.nn as nn
 from translator.model import Transformer
 from tokenizers import Tokenizer
-from translator.data import (load_jesc_datasets, tokenize_dataset, get_batch)
+from translator.data import (
+    load_jesc_datasets,
+    tokenize_dataset,
+    get_batch
+)
 from translator.evaluate import evaluate
 import random
 import numpy as np
 from pathlib import Path
 import csv
 
+
 def set_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-    torch.use_deterministic_algorithms(True)
+    torch.use_deterministic_algorithms(False)
     torch.cuda.manual_seed(seed)
 
 
-BATCH_SIZE = 128
+BATCH_SIZE = 256
 LEARNING_RATE = 1e-3
 MAX_STEPS = 100000
-SEED=2026
+SEED = 2026
+
 
 def main():
     set_seed(seed=SEED)
 
-    #setting device
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    torch.set_float32_matmul_precision("high")
 
-    #Load Dataset and Tokenizer
+    # Setting device
+    device = torch.device(
+        "cuda:0" if torch.cuda.is_available() else "cpu"
+    )
+
+    # Load Dataset and Tokenizer
     train_ds, eval_ds, test_ds = load_jesc_datasets()
     tokenizer = Tokenizer.from_file("artifacts/tokenizer.json")
 
-    #tokenize dataset
+    # Tokenize dataset
     train_data = tokenize_dataset(train_ds, tokenizer)
     eval_data = tokenize_dataset(eval_ds, tokenizer)
     test_data = tokenize_dataset(test_ds, tokenizer)
 
-    #model initialization
+    # Model initialization
     vocab_size = tokenizer.get_vocab_size()
     pad_id = tokenizer.token_to_id("<pad>")
+
     model = Transformer(
         vocab_size=vocab_size,
-        d_model=256,
-        nhead=4,
-        num_layers=2,
-        dim_feedforward=64,
-        dropout=0.2,
+        d_model=512,
+        nhead=8,
+        num_layers=6,
+        dim_feedforward=2048,
+        dropout=0.1,
         max_len=128,
         pad_id=pad_id
     ).to(device)
 
-    #define optimizer and loss function
-    optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE)
-    criterion = nn.CrossEntropyLoss(ignore_index=pad_id)
+    # Compile model
+    compiled_model = torch.compile(model, dynamic=True)
 
+    # Optimizer and loss function
+    optimizer = torch.optim.AdamW(
+        model.parameters(),
+        lr=LEARNING_RATE
+    )
+    criterion = nn.CrossEntropyLoss(ignore_index=pad_id)
 
     log_path = Path("outputs/train_loss.csv")
     log_path.parent.mkdir(parents=True, exist_ok=True)
 
     model.train()
     total_loss = 0
+
     with open(log_path, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["Step", "TrainLoss", "ValLoss"])
 
     for step in range(MAX_STEPS):
 
-        #Get Batch
-        src, decoder_input, labels = get_batch(train_data, batch_size=BATCH_SIZE, pad_id=pad_id)
+        # Get Batch
+        src, decoder_input, labels = get_batch(
+            train_data,
+            batch_size=BATCH_SIZE,
+            pad_id=pad_id
+        )
+
         src = src.to(device)
         decoder_input = decoder_input.to(device)
         labels = labels.to(device)
 
-        #Forward
-        logits = model(src=src, decoder_input=decoder_input)
+        # Forward
+        logits = compiled_model(
+            src=src,
+            decoder_input=decoder_input
+        )
 
-        #get loss
-        loss = criterion(logits.reshape(-1, vocab_size),
-                        labels.reshape(-1))
+        # Get loss
+        loss = criterion(
+            logits.reshape(-1, vocab_size),
+            labels.reshape(-1)
+        )
 
         optimizer.zero_grad()
         loss.backward()
+
+        # Gradient Clipping
+        torch.nn.utils.clip_grad_norm_(
+            model.parameters(),
+            max_norm=1.0
+        )
+        
         optimizer.step()
 
         total_loss += loss.item()
+
         if (step + 1) % 1000 == 0:
             train_loss = total_loss / 1000
+
             val_loss = evaluate(
                 model=model,
                 data=eval_data,
@@ -107,28 +144,39 @@ def main():
 
             with open(log_path, "a", newline="") as f:
                 writer = csv.writer(f)
-                writer.writerow([step+1, train_loss, val_loss])
+                writer.writerow([
+                    step + 1,
+                    train_loss,
+                    val_loss
+                ])
+
             total_loss = 0.0
 
+        # Save checkpoint
+        if (step + 1) % 10000 == 0:
 
+            save_path = Path(
+                f"artifacts/checkpoints/model_step{step+1:06d}.pt"
+            )
+            save_path.parent.mkdir(
+                parents=True,
+                exist_ok=True
+            )
 
-    save_path = Path(f"artifacts/checkpoints/model_step{MAX_STEPS:06d}.pt")
-    save_path.parent.mkdir(parents=True, exist_ok=True)
+            checkpoint = {
+                "model_state_dict": model.state_dict(),
+                "optimizer_state_dict": optimizer.state_dict(),
+                "step": step + 1,
+                "training_config": {
+                    "batch_size": BATCH_SIZE,
+                    "learning_rate": LEARNING_RATE,
+                    "max_steps": MAX_STEPS,
+                    "seed": SEED,
+                },
+            }
 
-    checkpoint = {}
-    checkpoint = {
-        "model_state_dict": model.state_dict(),
-        "optimizer_state_dict": optimizer.state_dict(),
-        "step": MAX_STEPS,
-        "training_config": {
-            "batch_size": BATCH_SIZE,
-            "learning_rate": LEARNING_RATE,
-            "max_steps": MAX_STEPS,
-            "seed": SEED,
-        },
-    }
-    torch.save(checkpoint, save_path)
-    print(f"Checkpoint saved: {save_path}")
+            torch.save(checkpoint, save_path)
+            print(f"Checkpoint saved: {save_path}")
 
 
 if __name__ == "__main__":
